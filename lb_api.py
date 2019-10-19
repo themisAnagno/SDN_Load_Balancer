@@ -1,6 +1,10 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
+
 import logging
+import threading
+
+from lb import run_lb
 
 
 # Create the logger
@@ -11,8 +15,9 @@ stream_handler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
+# Define global variables
 users = []
-
+api_thread = threading.Thread(target=run_lb, args=(1, users), daemon=True)
 
 class Users(Resource):
     """
@@ -20,12 +25,16 @@ class Users(Resource):
     balancer
     """
     def get(self):
+        global users
+
         return users, 200
 
     def post(self):
+        global users
+
         new_users = request.get_json()
         logger.debug(new_users)
-        users.append(new_users)
+        users += new_users["users"]
         return "New users added succesfully", 201
 
 
@@ -35,3 +44,10 @@ def create_app():
 
     api.add_resource(Users, '/api/users')
     app.run(host='0.0.0.0', port=8001)
+
+
+if (__name__ == "__main__"):
+    logger.info("IoRL Load Balancer Application starts")
+    # Start the lb application
+    api_thread.start()
+    create_app()

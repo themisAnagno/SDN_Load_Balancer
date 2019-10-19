@@ -1,9 +1,9 @@
 import requests
 import time
-import threading
 import logging
+import json
 
-import lb_api
+from rules import to_wifi
 
 
 # Create the logger
@@ -14,35 +14,55 @@ stream_handler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
-logger.info("IoRL Load Balancer Application starts")
 
-# Create the flask app for implementing APIs
-api_thread = threading.Thread(target=lb_api.create_app, args=(), daemon=True)
-api_thread.start()
-
-
-def run_lb():
+def run_lb(name, users):
     """
     Starts the Load Balancer application
     """
 
+    # Read the initial config parameters
+    with open('init_config.json') as init_config:
+        init_param = json.load(init_config)
+
+    # Check if all the values are not null
+    for param, value in init_param.items():
+        if not value :
+            logger.debug("Null initial value - Waiting to get initial parameters via API")
+            api_thread.join()
+            return
+
     # Initialize the traffic variable
-    response = requests.get(url="http://10.100.128.2:8080/stats/port/\
-                                182816038959173/2")
-    traffic = response.json()["182816038959173"][0]["rx_bytes"]
+    response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/stats/port/\
+                                {init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
+    traffic = response.json()[init_param['br-int_dpid']][0]["rx_bytes"]
     while True:
-        response = requests.get(url="http://10.100.128.2:8080/stats/port/\
-                                182816038959173/2")
-        new_traffic = response.json()["182816038959173"][0]["rx_bytes"]
+        response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/stats/port/\
+                                {init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
+        new_traffic = response.json()[init_param['br-int_dpid']][0]["rx_bytes"]
         # Calculate Mbps
-        bytes_per_sec = (new_traffic - traffic)/10
+        bytes_per_sec = (new_traffic - traffic)/init_param["interval"]
         Mbytes_per_sec = bytes_per_sec/1000000
         bitrate = Mbytes_per_sec * 8
-        if bitrate > 50:
-            logger.debug(f"The bitrate is over the thresehold ({bitrate})")
+        logger.debug(bitrate)
+        if bitrate > init_param["upper_bw_limit"]:
+            logger.debug(f"The bitrate is over the uper bw limit ({bitrate})")
+            logger.debug(users)
+        elif bitrate < init_param["lower_bw_limit"]:
+            logger.debug(f"The bitrate is under the lower bw linit ({bitrate})")
+            logger.debug(users)
+            if len(users) > 0:
+                data = to_wifi(init_param, users[0])
+                headers={"Content-Type": "application/json"}
+                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/add", data=data, headers=headers)
+                time.sleep(30)
+                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/delete_strict", data=data, headers=headers)
         traffic = new_traffic
-        time.sleep(10)
+        time.sleep(init_param["interval"])
 
 
-if (__name__ == "__main__"):
-    run_lb()
+
+
+
+
+
+

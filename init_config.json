@@ -1,0 +1,9 @@
+{
+	"upper_bw_limit": 60,
+	"lower_bw_limit": 30,
+	"ryu_ip": "10.100.128.2",
+	"br-int_dpid": "182816038959173",
+	"vlc_of_port": 2,
+	"wifi_vlan": 2,
+	"interval": 2
+}
