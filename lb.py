@@ -59,14 +59,15 @@ stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
             logger.debug(f"The bitrate is under lower bw linit ({bitrate})")
             logger.debug(users)
             wifi_list = get_wifi_users()
-            if len(users) > 0:
-                data = json.dumps(to_wifi(init_param, users[0]))
-                headers = {"Content-Type": "application/json"}
-                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/\
-flowentry/add", data=data, headers=headers)
-                time.sleep(30)
-                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/\
-flowentry/delete_strict", data=data, headers=headers)
+            vlc_users = get_vlc_users(wifi_list)
+#             if len(users) > 0:
+#                 data = json.dumps(to_wifi(init_param, users[0]))
+#                 headers = {"Content-Type": "application/json"}
+#                 requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/\
+# flowentry/add", data=data, headers=headers)
+#                 time.sleep(30)
+#                 requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/\
+# flowentry/delete_strict", data=data, headers=headers)
         traffic = new_traffic
         time.sleep(init_param["interval"])
 
@@ -75,7 +76,7 @@ flowentry/delete_strict", data=data, headers=headers)
 
 def get_wifi_users():
     """
-    Gets the users sent to the WiFi from
+    Gets the IP of the users currently on the WiFi
     """
     response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/\
 stats/flow/{init_param['br-int_dpid']}")
@@ -88,4 +89,14 @@ stats/flow/{init_param['br-int_dpid']}")
             continue
         else:
             wifi_list.append(vlc_ip)
+        logger.debug(f"WiFi Users: {wifi_list}")
     return wifi_list
+
+
+def get_vlc_users(wifi_list):
+    """
+    Returns the list of the users that are currently on the VLC/mmWave
+    """
+    vlc_users = [user for user in users if user["vlc_ip"] not in wifi_list]
+    logger.debug(f"VLC Users: {vlc_users}")
+    return vlc_users
