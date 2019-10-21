@@ -1,7 +1,5 @@
 def to_wifi(params, user):
 
-    print(user)
-
     to_wifi_data = {
         "dpid": int(params["br-int_dpid"]),
         "table_id": 0,
@@ -36,3 +34,30 @@ def to_wifi(params, user):
         }
 
     return to_wifi_data
+
+
+def from_wifi(params, user):
+
+    from_wifi_data = {
+        "dpid": int(params["br-int_dpid"]),
+        "table_id": 0,
+        "priority": 2,
+        "idle_timeout": 120,
+        "match": {
+            "eth_type": 2048,
+            "ipv4_src": user["wifi_ip"]
+        },
+        "actions": [
+                    {
+                        "type": "SET_FIELD",
+                        "field": "ipv4_src",
+                        "value": user["vlc_ip"]
+                    },
+                    {
+                        "type": "GOTO_TABLE",
+                        "table_id": 60
+                    }
+                ]
+        }
+
+    return from_wifi_data

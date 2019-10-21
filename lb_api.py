@@ -37,9 +37,9 @@ class Users(Resource):
         Create the list of the registered users oF the IoRL Platform
         """
         new_users = request.get_json()
-        logger.debug(new_users)
         lb.users = new_users["users"]
-        return {"Message": "User list changed succesfully"}, 201
+        return {"Message": "User list changed succesfully",
+                "New Users": new_users}, 201
 
 
 class Params(Resource):
@@ -61,20 +61,14 @@ class Params(Resource):
 
         new_param = request.get_json()
         lb.init_param = request.get_json()
-        logger.debug(new_param)
         if not api_thread.is_alive():
             thread_counter += 1
             api_thread = threading.Thread(target=lb.run_lb,
                                           args=(thread_counter,),
                                           daemon=True)
             api_thread.start()
-            # lb.stop = True
-            # thread_counter += 1
-            # api_thread = threading.Thread(target=lb.run_lb,
-            #                               args=(thread_counter),
-            #                               daemon=True)
-            # api_thread.start()
-        return {"Message": "Operational changed succesfully"}, 201
+        return {"Message": "Operational changed succesfully",
+                "New Parameters": new_param}, 201
 
 
 def create_app():

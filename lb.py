@@ -4,7 +4,7 @@ import logging
 import json
 import random
 
-from rules import to_wifi
+from rules import to_wifi, from_wifi
 
 
 # Create the logger
@@ -63,7 +63,12 @@ stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
                 chosen_user_index = random.randint(0, len(vlc_users)-1)
                 chosen_user = vlc_users[chosen_user_index]
                 logger.info(f"User {chosen_user} will be transfered to WiFi")
+                # Add rule for incoming traffic
                 data = json.dumps(to_wifi(init_param, chosen_user))
+                headers = {"Content-Type": "application/json"}
+                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/add", data=data, headers=headers)
+                # Add rule for outgoing traffic
+                data = json.dumps(from_wifi(init_param, chosen_user))
                 headers = {"Content-Type": "application/json"}
                 requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/add", data=data, headers=headers)
         elif bitrate < init_param["lower_bw_limit"]:
@@ -77,7 +82,12 @@ stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
                 chosen_user = [user for user in users if user["vlc_ip"] == chosen_wifi_user]
                 if len(chosen_user) > 0:
                     logger.info(f"User {chosen_user[0]} will be transfered back to VLC")
+                    # Delete rule for ingoing traffic
                     data = json.dumps(to_wifi(init_param, chosen_user[0]))
+                    headers = {"Content-Type": "application/json"}
+                    requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/delete_strict", data=data, headers=headers)
+                    # Delete rule for outgoing traffic
+                    data = json.dumps(from_wifi(init_param, chosen_user[0]))
                     headers = {"Content-Type": "application/json"}
                     requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/delete_strict", data=data, headers=headers)
 
