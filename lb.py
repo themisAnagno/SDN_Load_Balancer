@@ -14,8 +14,11 @@ stream_handler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
+# Define global vars
+users = []
 
-def run_lb(name, users):
+
+def run_lb(name):
     """
     Starts the Load Balancer application
     """
@@ -26,18 +29,18 @@ def run_lb(name, users):
 
     # Check if all the values are not null
     for param, value in init_param.items():
-        if not value :
-            logger.debug("Null initial value - Waiting to get initial parameters via API")
-            api_thread.join()
+        if not value:
+            logger.debug("Null initial value - Waiting to get initial/\
+parameters via API")
             return
 
     # Initialize the traffic variable
-    response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/stats/port/\
-                                {init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
+    response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/stats/\
+port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
     traffic = response.json()[init_param['br-int_dpid']][0]["rx_bytes"]
     while True:
-        response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/stats/port/\
-                                {init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
+        response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/\
+stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
         new_traffic = response.json()[init_param['br-int_dpid']][0]["rx_bytes"]
         # Calculate Mbps
         bytes_per_sec = (new_traffic - traffic)/init_param["interval"]
@@ -45,24 +48,18 @@ def run_lb(name, users):
         bitrate = Mbytes_per_sec * 8
         logger.debug(bitrate)
         if bitrate > init_param["upper_bw_limit"]:
-            logger.debug(f"The bitrate is over the uper bw limit ({bitrate})")
+            logger.debug(f"The bitrate is over upper bw limit ({bitrate})")
             logger.debug(users)
         elif bitrate < init_param["lower_bw_limit"]:
-            logger.debug(f"The bitrate is under the lower bw linit ({bitrate})")
+            logger.debug(f"The bitrate is under lower bw linit ({bitrate})")
             logger.debug(users)
             if len(users) > 0:
-                data = to_wifi(init_param, users[0])
-                headers={"Content-Type": "application/json"}
-                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/add", data=data, headers=headers)
+                data = json.dumps(to_wifi(init_param, users[0]))
+                headers = {"Content-Type": "application/json"}
+                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/\
+flowentry/add", data=data, headers=headers)
                 time.sleep(30)
-                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/delete_strict", data=data, headers=headers)
+                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/\
+flowentry/delete_strict", data=data, headers=headers)
         traffic = new_traffic
         time.sleep(init_param["interval"])
-
-
-
-
-
-
-
-

@@ -4,7 +4,7 @@ from flask_restful import Resource, Api
 import logging
 import threading
 
-from lb import run_lb
+import lb
 
 
 # Create the logger
@@ -16,8 +16,8 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
 
 # Define global variables
-users = []
-api_thread = threading.Thread(target=run_lb, args=(1, users), daemon=True)
+api_thread = threading.Thread(target=lb.run_lb, args=(1,), daemon=True)
+
 
 class Users(Resource):
     """
@@ -30,11 +30,10 @@ class Users(Resource):
         return users, 200
 
     def post(self):
-        global users
 
         new_users = request.get_json()
         logger.debug(new_users)
-        users += new_users["users"]
+        lb.users = new_users["users"]
         return "New users added succesfully", 201
 
 
