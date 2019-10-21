@@ -63,6 +63,7 @@ class Params(Resource):
         lb.init_param = request.get_json()
         logger.debug(new_param)
         if not api_thread.is_alive():
+            thread_counter += 1
             api_thread = threading.Thread(target=lb.run_lb,
                                           args=(thread_counter,),
                                           daemon=True)

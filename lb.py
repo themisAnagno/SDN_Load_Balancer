@@ -2,6 +2,7 @@ import requests
 import time
 import logging
 import json
+import random
 
 from rules import to_wifi
 
@@ -33,8 +34,8 @@ def run_lb(name):
     # Check if all the values are not null
     for param, value in init_param.items():
         if not value:
-            logger.debug(f"Null initial value for {param} - Waiting to get\
- initial/parameters via API")
+            logger.debug(f"Null initial value for {param} - Waiting to get initial/parameters via API")
+            logger.info(f"Load Balancer on thread {name} stops")
             return
 
     # Initialize the traffic variable
@@ -51,23 +52,32 @@ stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
         bytes_per_sec = (new_traffic - traffic)/init_param["interval"]
         Mbytes_per_sec = bytes_per_sec/1000000
         bitrate = Mbytes_per_sec * 8
-        logger.debug(bitrate)
+        logger.info(f"The bitrate is {bitrate}")
         if bitrate > init_param["upper_bw_limit"]:
-            logger.debug(f"The bitrate is over upper bw limit ({bitrate})")
-            logger.debug(users)
-        elif bitrate < init_param["lower_bw_limit"]:
-            logger.debug(f"The bitrate is under lower bw linit ({bitrate})")
-            logger.debug(users)
+            logger.info(f"The bitrate is over upper bw limit ({bitrate})")
             wifi_list = get_wifi_users()
-            vlc_users = get_vlc_users(wifi_list)
-#             if len(users) > 0:
-#                 data = json.dumps(to_wifi(init_param, users[0]))
-#                 headers = {"Content-Type": "application/json"}
-#                 requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/\
-# flowentry/add", data=data, headers=headers)
-#                 time.sleep(30)
-#                 requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/\
-# flowentry/delete_strict", data=data, headers=headers)
+            vlc_users = get_vlc_users(wifi_users)
+            if len(vlc_users) == 0:
+                logger.warning("There are not registered users to go to the WiFi network")
+            else:
+                chosen_user = random.randint(0, len(vlc_users)-1)
+                data = json.dumps(to_wifi(init_param, chosen_user))
+                headers = {"Content-Type": "application/json"}
+                requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/add", data=data, headers=headers)
+        elif bitrate < init_param["lower_bw_limit"]:
+            logger.info(f"The bitrate is under lower bw linit ({bitrate})")
+            wifi_list = get_wifi_users()
+            if len(wifi_list) == 0:
+                logger.warning("There are not users on the WiFi network")
+            else:
+                chosen_wifi_user_index = random.randint(0, len(wifi_list)-1)
+                chosen_wifi_user = wifi_list[chosen_wifi_user_index]
+                chosen_user = [user for user in users if user["vlc_ip"] == chosen_wifi_user]
+                if len(chosen_user) > 0:
+                    data = json.dumps(to_wifi(init_param, chosen_user[0]))
+                    headers = {"Content-Type": "application/json"}
+                    requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/delete_strict", data=data, headers=headers)
+
         traffic = new_traffic
         time.sleep(init_param["interval"])
 
@@ -81,16 +91,15 @@ def get_wifi_users():
     response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/\
 stats/flow/{init_param['br-int_dpid']}")
     rules = response.json()[init_param['br-int_dpid']]
-    wifi_list = []
+    wifi_users = []
     for rule in rules:
         try:
             vlc_ip = rule["match"]["nw_dst"]
         except KeyError:
             continue
         else:
-            wifi_list.append(vlc_ip)
-        logger.debug(f"WiFi Users: {wifi_list}")
-    return wifi_list
+            wifi_users.append(vlc_ip)
+    return wifi_users
 
 
 def get_vlc_users(wifi_list):
