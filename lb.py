@@ -58,6 +58,7 @@ stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
         elif bitrate < init_param["lower_bw_limit"]:
             logger.debug(f"The bitrate is under lower bw linit ({bitrate})")
             logger.debug(users)
+            wifi_list = get_wifi_users()
             if len(users) > 0:
                 data = json.dumps(to_wifi(init_param, users[0]))
                 headers = {"Content-Type": "application/json"}
@@ -76,4 +77,15 @@ def get_wifi_users():
     """
     Gets the users sent to the WiFi from
     """
-    pass
+    response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/\
+stats/flow/{init_param['br-int_dpid']}")
+    rules = response.json()[init_param['br-int_dpid']]
+    wifi_list = []
+    for rule in rules:
+        try:
+            vlc_ip = rule["match"]["nw_dst"]
+        except KeyError:
+            continue
+        else:
+            wifi_list.append(vlc_ip)
+    return wifi_list
