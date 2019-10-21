@@ -5,5 +5,5 @@
 	"br-int_dpid": "182816038959173",
 	"vlc_of_port": 2,
 	"wifi_vlan": 2,
-	"interval": 2
+	"interval": 10
 }

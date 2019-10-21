@@ -16,12 +16,15 @@ logger.addHandler(stream_handler)
 
 # Define global vars
 users = []
+init_param = {}
+stop = False
 
 
 def run_lb(name):
     """
     Starts the Load Balancer application
     """
+    global init_param, stop
 
     # Read the initial config parameters
     with open('init_config.json') as init_config:
@@ -30,15 +33,17 @@ def run_lb(name):
     # Check if all the values are not null
     for param, value in init_param.items():
         if not value:
-            logger.debug("Null initial value - Waiting to get initial/\
-parameters via API")
+            logger.debug(f"Null initial value for {param} - Waiting to get\
+ initial/parameters via API")
             return
 
     # Initialize the traffic variable
     response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/stats/\
 port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
     traffic = response.json()[init_param['br-int_dpid']][0]["rx_bytes"]
-    while True:
+
+    # Start the lb iteration
+    while not stop:
         response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/\
 stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
         new_traffic = response.json()[init_param['br-int_dpid']][0]["rx_bytes"]
@@ -63,3 +68,12 @@ flowentry/add", data=data, headers=headers)
 flowentry/delete_strict", data=data, headers=headers)
         traffic = new_traffic
         time.sleep(init_param["interval"])
+
+    logger.info(f"Load Balancer on thread {name} stops")
+
+
+def get_wifi_users():
+    """
+    Gets the users sent to the WiFi from
+    """
+    pass
