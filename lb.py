@@ -34,38 +34,40 @@ def run_lb(name):
     # Check if all the values are not null
     for param, value in init_param.items():
         if not value:
-            logger.debug(f"Null initial value for {param} - Waiting to get initial/parameters via API")
+            logger.warning(f"Null initial value for -> {param} <- \nWaiting to get initial/parameters via API")
             logger.info(f"Load Balancer on thread {name} stops")
             return
 
     # Initialize the traffic variable
     response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/stats/\
 port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
-    traffic = response.json()[init_param['br-int_dpid']][0]["rx_bytes"]
+    traffic = response.json()[init_param['br-int_dpid']][0]["tx_bytes"]
 
     # Start the lb iteration
     while not stop:
         response = requests.get(url=f"http://{init_param['ryu_ip']}:8080/\
 stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
-        new_traffic = response.json()[init_param['br-int_dpid']][0]["rx_bytes"]
+        new_traffic = response.json()[init_param['br-int_dpid']][0]["tx_bytes"]
         # Calculate Mbps
         bytes_per_sec = (new_traffic - traffic)/init_param["interval"]
         Mbytes_per_sec = bytes_per_sec/1000000
         bitrate = Mbytes_per_sec * 8
-        logger.info(f"The bitrate is {bitrate}")
+        logger.info("The bitrate is {0:.2f} Mbps".format(bitrate))
         if bitrate > init_param["upper_bw_limit"]:
-            logger.info(f"The bitrate is over upper bw limit ({bitrate})")
+            logger.info(f"The bitrate is over upper bw limit")
             wifi_list = get_wifi_users()
-            vlc_users = get_vlc_users(wifi_users)
+            vlc_users = get_vlc_users(wifi_list)
             if len(vlc_users) == 0:
                 logger.warning("There are not registered users to go to the WiFi network")
             else:
-                chosen_user = random.randint(0, len(vlc_users)-1)
+                chosen_user_index = random.randint(0, len(vlc_users)-1)
+                chosen_user = vlc_users[chosen_user_index]
+                logger.info(f"User {chosen_user} will be transfered to WiFi")
                 data = json.dumps(to_wifi(init_param, chosen_user))
                 headers = {"Content-Type": "application/json"}
                 requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/add", data=data, headers=headers)
         elif bitrate < init_param["lower_bw_limit"]:
-            logger.info(f"The bitrate is under lower bw linit ({bitrate})")
+            logger.info(f"The bitrate is under lower bw linit")
             wifi_list = get_wifi_users()
             if len(wifi_list) == 0:
                 logger.warning("There are not users on the WiFi network")
@@ -74,6 +76,7 @@ stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
                 chosen_wifi_user = wifi_list[chosen_wifi_user_index]
                 chosen_user = [user for user in users if user["vlc_ip"] == chosen_wifi_user]
                 if len(chosen_user) > 0:
+                    logger.info(f"User {chosen_user[0]} will be transfered back to VLC")
                     data = json.dumps(to_wifi(init_param, chosen_user[0]))
                     headers = {"Content-Type": "application/json"}
                     requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/delete_strict", data=data, headers=headers)
@@ -107,5 +110,4 @@ def get_vlc_users(wifi_list):
     Returns the list of the users that are currently on the VLC/mmWave
     """
     vlc_users = [user for user in users if user["vlc_ip"] not in wifi_list]
-    logger.debug(f"VLC Users: {vlc_users}")
     return vlc_users

@@ -11,7 +11,7 @@ def to_wifi(params, user):
             "eth_type": 2048,
             "ipv4_dst": user["vlc_ip"],
             "dl_vlan": "0x0000",
-            "in_port": params["vlc_of_port"]
+            "in_port": params["external_of_port"]
         },
         "actions": [
                     {
