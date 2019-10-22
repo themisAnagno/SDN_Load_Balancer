@@ -1,0 +1,17 @@
+#cloud-config
+# vim: syntax=yaml
+#
+write_files:
+  - path: /init_param.json
+    content: |
+      {
+        "upper_bw_limit": 40,
+        "lower_bw_limit": 20,
+        "ryu_ip": "10.100.128.2",
+        "br-int_dpid": "182816038959173",
+        "vlc_of_port": 12,
+          "external_of_port": 2,
+        "wifi_vlan": 2,
+        "interval": 20
+      }
+    permissions: "0644"

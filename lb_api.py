@@ -1,5 +1,5 @@
 from flask import Flask, request
-from flask_restful import Resource, Api
+from flask_restplus import Resource, Api
 
 import logging
 import threading
@@ -71,12 +71,41 @@ class Params(Resource):
                 "New Parameters": new_param}, 201
 
 
+class Wifiusers(Resource):
+    """
+    Returns the list of users that are currently  on the WiFi
+    """
+    def get(self):
+        """
+        Returns the list of users on the WiFi
+        """
+        wifi_users_list = lb.get_wifi_users()
+        return {"WiFi Users": wifi_users_list}, 200
+
+
+class Vlcusers(Resource):
+    """
+    Returns the list of users that are currently on the VLC
+    """
+    def get(self):
+        """
+        Returns the list of users on the VLC
+        """
+        wifi_users_list = lb.get_wifi_users()
+        vlc_users_list = lb.get_vlc_users(wifi_users_list)
+        return {"VLC Users": vlc_users_list}, 200
+
+
 def create_app():
     app = Flask(__name__)
     api = Api(app)
 
+    # Define the endpoint routes
     api.add_resource(Users, '/api/users')
     api.add_resource(Params, '/api/parameters')
+    api.add_resource(Vlcusers, '/api/vlcusers')
+    api.add_resource(Wifiusers, '/api/wifiusers')
+    # Start the application
     app.run(host='0.0.0.0', port=8001)
 
 
