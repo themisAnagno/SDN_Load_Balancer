@@ -1,5 +1,6 @@
 from flask import Flask, request
-from flask_restplus import Resource, Api
+from flask_restful import Resource, Api
+from flask_swagger_ui import get_swaggerui_blueprint
 
 import logging
 import threading
@@ -14,6 +15,16 @@ formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 stream_handler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
+
+
+# Create the swagger
+SWAGGER_URL = '/api/docs'
+API_URL = '/static/swagger.json'
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={'app_name': "Test application"})
+
 
 # Define global variables
 thread_counter = 1
@@ -34,12 +45,37 @@ class Users(Resource):
 
     def post(self):
         """
+        Add users to the list of the registered users oF the IoRL Platform
+        """
+        new_users = request.get_json()
+        lb.users += new_users["users"]
+        logger.debug(type(lb.users))
+        return {"Message": "User list changed succesfully",
+                "New Users": lb.users}, 201
+
+    def put(self):
+        """
         Create the list of the registered users oF the IoRL Platform
         """
         new_users = request.get_json()
         lb.users = new_users["users"]
+        logger.debug(type(lb.users))
         return {"Message": "User list changed succesfully",
-                "New Users": new_users}, 201
+                "New Users": lb.users}, 201
+
+    def delete(self):
+        """
+        Deletes the given users form the registered users list. If no users
+        provided, it will delete the whole list
+        """
+        remove_users = request.get_json()
+        if not remove_users:
+            lb.users = []
+        else:
+            old_users = list(lb.users)
+            lb.users = [user for user in old_users if user not in remove_users["users"]]
+        return {"Message": "User list changed succesfully",
+                "New Users": lb.users}, 201
 
 
 class Params(Resource):
@@ -52,7 +88,7 @@ class Params(Resource):
         """
         return lb.init_param, 200
 
-    def post(self):
+    def put(self):
         """
         Creates/Updates the operational parameters of the Load Balancer if the
         Load Balancer is not started
@@ -105,6 +141,8 @@ def create_app():
     api.add_resource(Params, '/api/parameters')
     api.add_resource(Vlcusers, '/api/vlcusers')
     api.add_resource(Wifiusers, '/api/wifiusers')
+    # Register blueprint at URL
+    app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
     # Start the application
     app.run(host='0.0.0.0', port=8001)
 

@@ -1,0 +1,11 @@
+# Flask Framework
+flask
+
+# API
+Flask-RESTful
+
+# API calls
+requests
+
+# Swagger
+flask-swagger-ui

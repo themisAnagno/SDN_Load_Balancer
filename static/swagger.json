@@ -1,0 +1,343 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is the IoRL Load Balancer swagger for documenting the NBI REST APIs of the Load Balancer VNFs. These APIs are used for interaction with the user/administrator of the Load Balancer",
+    "title": "IoRL Load Balancer Swagger",
+    "version": "1.0.0",
+    "contact": {
+      "email": "thmanagnostopoulos@iit.demokritos.gr"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "lb_vnf:8001",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "Parameters",
+      "description": "Read and Update the Load Balancer operational parameters"
+    },
+    {
+      "name": "Users",
+      "description": "Add, Read, Update and Delete users of the Load Balancer VNF on the IoRL platform"
+    },
+    {
+      "name": "VLC/mmWave Users",
+      "description": "Read the list of the registered users currently using the VLC/mmWave AN"
+    },
+    {
+      "name": "WiFi Users",
+      "description": "Read the list of the registered users currently using the WiFi AN"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Returns a list of connected IoRL platform users",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/users"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        }
+      },
+      "post":{
+        "tags": [
+          "Users"
+        ],
+        "summary": "Adds new users to the users list",
+        "consumes": [
+          "application/json",
+          "application/yaml"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "User list changed succesfully",
+            "schema": {
+              "type": "string",
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        },
+        "parameters":[
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New Users",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties":{
+                "nsi":{
+                  "$ref": "#/definitions/users"
+                }  
+              }
+            }
+          }
+        ]
+      },
+      "put":{
+        "tags": [
+          "Users"
+         ],
+        "summary": "Creates or updates the users list",
+        "consumes": [
+          "application/json",
+          "application/yaml"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "User list changed succesfully",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        },
+        "parameters":[
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New Users",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties":{
+                "nsi":{
+                  "$ref": "#/definitions/users"
+                }  
+              }
+            }
+          }
+        ]
+      },
+      "delete":{
+        "tags": [
+          "Users"
+        ],
+        "summary": "Deletes users from the users list. If no data are sent, it will delete the whole list.",
+        "consumes": [
+          "application/json",
+          "application/yaml"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "User list changed succesfully",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        },
+        "parameters":[
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New Users",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "properties":{
+                "nsi":{
+                  "$ref": "#/definitions/users"
+                }  
+              }
+            }
+          }
+        ]
+      },
+    },
+    "/parameters": {
+      "get": {
+        "tags": [
+          "Parameters"
+        ],
+        "summary": "Returns a dictionary with the LB operational parameters",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/parameters"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        }
+      },
+      "put":{
+        "tags": [
+          "Parameters"
+         ],
+        "summary": "Creates or updates the LB operational parameters",
+        "consumes": [
+          "application/json",
+          "application/yaml"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "User list changed succesfully",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        },
+        "parameters":[
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New Users",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties":{
+                "nsi":{
+                  "$ref": "#/definitions/parameters"
+                }  
+              }
+            }
+          }
+        ]
+      }
+    },
+    "/vlcusers": {
+      "get": {
+        "tags": [
+          "VLC/mmWave Users"
+        ],
+        "summary": "Returns a list with the users on the VLC/mmWave Access Network",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/users"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        }
+      }
+    },
+    "/wifiusers": {
+      "get": {
+        "tags": [
+          "WiFi Users"
+        ],
+        "summary": "Returns a list with the users on the WiFi Access Network",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/users"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        }
+      }
+    }
+  },
+  "definitions":{
+    "users": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/user"
+      }
+    },
+    "user": {
+      "type": "object",
+      "properties":{
+        "vlc_ip": {"type": "string"},
+        "wifi_ip": {"type": "string"}
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "upper_bw_limit": {"type": "integer"},
+        "lower_bw_limit": {"type": "integer"},
+        "ryu_ip": {"type": "string"},
+        "br-int_dpid": {"type": "string"},
+        "vlc_of_port": {"type": "integer"},
+        "external_of_port": {"type": "integer"},
+        "wifi_vlan": {"type": "integer"},
+        "interval": {"type": "integer"}
+      }
+    }
+  }
+}
