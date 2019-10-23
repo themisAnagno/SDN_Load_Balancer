@@ -1,6 +1,9 @@
 # Flask Framework
 flask
 
+# Webserver
+gunicorn
+
 # API
 Flask-RESTful
 

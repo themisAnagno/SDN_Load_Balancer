@@ -14,3 +14,7 @@ Install the requirements
 ```
 pip3 install -r requirements.txt
 ```
+Start the Load Balancer Application
+```
+python3.7 lb_api
+```

@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_swagger_ui import get_swaggerui_blueprint
 
@@ -111,7 +111,7 @@ class Params(Resource):
 
 class Wifiusers(Resource):
     """
-    Returns the list of users that are currently  on the WiFi
+    List of users currently on the WiFi Access Network
     """
     def get(self):
         """
@@ -126,7 +126,7 @@ class Wifiusers(Resource):
 
 class Vlcusers(Resource):
     """
-    Returns the list of users that are currently on the VLC
+    List of users currently on the VLC Access network
     """
     def get(self):
         """
@@ -140,7 +140,25 @@ class Vlcusers(Resource):
             return {"Message": "The LB application is not running"}, 400
 
 
+class Logs(Resource):
+    """
+    Logs of the load balancer application
+    """
+    def get(self):
+        """
+        Returns the logs of the load balancer application
+        """
+        return send_from_directory("./", "lb_logs", as_attachment=True)
+
+
 def create_app():
+    """
+    Creates the Flask application and the Load Balancer thread
+    """
+    logger.info("IoRL Load Balancer Application starts")
+    # Start the lb application
+    api_thread.start()
+
     app = Flask(__name__)
     api = Api(app)
 
@@ -149,14 +167,13 @@ def create_app():
     api.add_resource(Params, '/api/parameters')
     api.add_resource(Vlcusers, '/api/vlcusers')
     api.add_resource(Wifiusers, '/api/wifiusers')
+    api.add_resource(Logs, '/api/logs')
     # Register blueprint at URL
     app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
     # Start the application
-    app.run(host='0.0.0.0', port=8001)
+    return app
 
 
 if (__name__ == "__main__"):
-    logger.info("IoRL Load Balancer Application starts")
-    # Start the lb application
-    api_thread.start()
-    create_app()
+    app = create_app()
+    app.run(host='0.0.0.0', port=8001)

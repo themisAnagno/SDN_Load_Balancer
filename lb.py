@@ -72,7 +72,7 @@ stats/port/{init_param['br-int_dpid']}/{init_param['vlc_of_port']}")
                 headers = {"Content-Type": "application/json"}
                 requests.post(url=f"http://{init_param['ryu_ip']}:8080/stats/flowentry/add", data=data, headers=headers)
         elif bitrate < init_param["lower_bw_limit"]:
-            logger.info(f"The bitrate is under lower bw linit")
+            logger.info(f"The bitrate is under lower bw limit")
             wifi_list = get_wifi_users()
             if len(wifi_list) == 0:
                 logger.warning("There are not users on the WiFi network")
