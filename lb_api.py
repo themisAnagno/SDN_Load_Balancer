@@ -4,6 +4,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 
 import logging
 import threading
+import json
 
 import lb
 
@@ -49,7 +50,6 @@ class Users(Resource):
         """
         new_users = request.get_json()
         lb.users += new_users["users"]
-        logger.debug(type(lb.users))
         return {"Message": "User list changed succesfully",
                 "New Users": lb.users}, 201
 
@@ -59,7 +59,6 @@ class Users(Resource):
         """
         new_users = request.get_json()
         lb.users = new_users["users"]
-        logger.debug(type(lb.users))
         return {"Message": "User list changed succesfully",
                 "New Users": lb.users}, 201
 
@@ -98,6 +97,9 @@ class Params(Resource):
         new_param = request.get_json()
         lb.init_param = request.get_json()
         if not api_thread.is_alive():
+            with open("init_config.json", "w") as param_file:
+                json.dump(new_param, param_file)
+
             thread_counter += 1
             api_thread = threading.Thread(target=lb.run_lb,
                                           args=(thread_counter,),
@@ -115,8 +117,11 @@ class Wifiusers(Resource):
         """
         Returns the list of users on the WiFi
         """
-        wifi_users_list = lb.get_wifi_users()
-        return {"WiFi Users": wifi_users_list}, 200
+        if api_thread.is_alive():
+            wifi_users_list = lb.get_wifi_users()
+            return {"WiFi Users": wifi_users_list}, 200
+        else:
+            return {"Message": "The LB application is not running"}, 400
 
 
 class Vlcusers(Resource):
@@ -127,9 +132,12 @@ class Vlcusers(Resource):
         """
         Returns the list of users on the VLC
         """
-        wifi_users_list = lb.get_wifi_users()
-        vlc_users_list = lb.get_vlc_users(wifi_users_list)
-        return {"VLC Users": vlc_users_list}, 200
+        if api_thread.is_alive():
+            wifi_users_list = lb.get_wifi_users()
+            vlc_users_list = lb.get_vlc_users(wifi_users_list)
+            return {"VLC Users": vlc_users_list}, 200
+        else:
+            return {"Message": "The LB application is not running"}, 400
 
 
 def create_app():
