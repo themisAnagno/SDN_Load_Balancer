@@ -15,7 +15,7 @@ import lb
 logger = logging.getLogger(__name__)
 stream_handler = logging.StreamHandler()
 file_handler = logging.handlers.RotatingFileHandler(
-    "logs/lb_app.log", maxBytes=10000, backupCount=5)
+    "lb_app.log", maxBytes=10000, backupCount=5)
 formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 stream_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
@@ -158,11 +158,11 @@ class ServiceLogs(Resource):
         """
         x = os.system("service lb status")
         if not x:
-            os.system("journalctl -u lb.service -b -n 40> logs/lb.log")
+            os.system("journalctl -u lb.service -b -n 40> lb.log")
             log_file = "lb.log"
         else:
             log_file = "lb_app.log"
-        return send_from_directory("./logs/", log_file, as_attachment=True)
+        return send_from_directory("./", log_file, as_attachment=True)
 
 
 class Logs(Resource):
@@ -174,7 +174,7 @@ class Logs(Resource):
         Returns the logs of the load balancer application
         """
         log_file = "lb_app.log"
-        return send_from_directory("./logs/", log_file, as_attachment=True)
+        return send_from_directory("./", log_file, as_attachment=True)
 
 
 def create_app():

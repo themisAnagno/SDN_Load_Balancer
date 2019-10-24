@@ -10,7 +10,7 @@ from rules import to_wifi, from_wifi
 # Create the logger
 logger = logging.getLogger(__name__)
 file_handler = logging.handlers.RotatingFileHandler(
-    "/logs/lb_app.log", maxBytes=10000, backupCount=5)
+    "/lb_app.log", maxBytes=10000, backupCount=5)
 formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 file_handler.setFormatter(formatter)
 logger.setLevel(logging.INFO)
