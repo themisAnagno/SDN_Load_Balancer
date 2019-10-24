@@ -6,6 +6,7 @@ import logging
 import threading
 import json
 import os
+import atexit
 
 import lb
 
@@ -13,10 +14,14 @@ import lb
 # Create the logger
 logger = logging.getLogger(__name__)
 stream_handler = logging.StreamHandler()
+file_handler = logging.handlers.RotatingFileHandler(
+    "lb_app.log", maxBytes=10000, backupCount=5)
 formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 stream_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
 
 
 # Create the swagger
@@ -149,8 +154,13 @@ class Logs(Resource):
         """
         Returns the logs of the load balancer application
         """
-        os.system("journalctl -u lb.service -b > lb.log")
-        return send_from_directory("./", "lb.log", as_attachment=True)
+        x = os.system("service lb status")
+        if not x:
+            os.system("journalctl -u lb.service -b > lb.log")
+            log_file = "lb.log"
+        else:
+            log_file = "lb_app.log"
+        return send_from_directory("./", log_file, as_attachment=True)
 
 
 def create_app():
@@ -160,6 +170,7 @@ def create_app():
     logger.info("IoRL Load Balancer Application starts")
     # Start the lb application
     api_thread.start()
+    atexit.register(lambda: os.system("rm -f lb_app.log"))
 
     app = Flask(__name__)
     api = Api(app)
@@ -172,10 +183,10 @@ def create_app():
     api.add_resource(Logs, '/api/logs')
     # Register blueprint at URL
     app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
-    # Start the application
     return app
 
 
 if (__name__ == "__main__"):
+    # Start the application
     app = create_app()
     app.run(host='0.0.0.0', port=8001)

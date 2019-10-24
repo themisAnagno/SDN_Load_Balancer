@@ -6,5 +6,5 @@
     "vlc_of_port": 12,
     "external_of_port": 2,
     "wifi_vlan": 2,
-    "interval": 40
+    "interval": 20
 }
