@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "This is the IoRL Load Balancer swagger for documenting the NBI REST APIs of the Load Balancer VNFs. These APIs are used for interaction with the user/administrator of the Load Balancer",
-    "title": "IoRL Load Balancer Swagger",
+    "description": "This is the SDN/NFV Load Balancer swagger for documenting the NBI REST APIs of the Load Balancer VNFs. These APIs are used for interaction with the user/administrator of the Load Balancer",
+    "title": "SDN/NFV Load Balancer Swagger",
     "version": "1.0.0",
     "contact": {
       "email": "thmanagnostopoulos@iit.demokritos.gr"
@@ -21,7 +21,7 @@
     },
     {
       "name": "Users",
-      "description": "Add, Read, Update and Delete users of the Load Balancer VNF on the IoRL platform"
+      "description": "Add, Read, Update and Delete users of the Load Balancer VNF on the SDN/NFV platform"
     },
     {
       "name": "VLC/mmWave Users",
@@ -30,6 +30,10 @@
     {
       "name": "WiFi Users",
       "description": "Read the list of the registered users currently using the WiFi AN"
+    },
+    {
+      "name": "Logs",
+      "description": "Log file of the Load Balancer application"
     }
   ],
   "schemes": [
@@ -41,7 +45,7 @@
         "tags": [
           "Users"
         ],
-        "summary": "Returns a list of connected IoRL platform users",
+        "summary": "Returns a list of connected SDN/NFV platform users",
         "produces": [
           "application/json"
         ],
@@ -301,6 +305,28 @@
             "schema": {
               "$ref": "#/definitions/users"
             }
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        }
+      }
+    },
+    "/logs": {
+      "get": {
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Returns the Load Balancer application logs",
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
           },
           "400": {
             "description": "Bad Request",

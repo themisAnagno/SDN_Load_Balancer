@@ -5,6 +5,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import logging
 import threading
 import json
+import os
 
 import lb
 
@@ -148,7 +149,8 @@ class Logs(Resource):
         """
         Returns the logs of the load balancer application
         """
-        return send_from_directory("./", "lb_logs", as_attachment=True)
+        os.system("journalctl -u lb.service -b > lb.log")
+        return send_from_directory("./", "lb.log", as_attachment=True)
 
 
 def create_app():

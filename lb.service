@@ -1,0 +1,13 @@
+
+[Unit]
+Description=Gunicorn instance to serve Load Balancer Application
+After=network.target
+
+[Service]
+User=iorl
+WorkingDirectory=/home/iorl/SDN_Load_Balancer
+ExecStart=/home/iorl/.local/bin/gunicorn -b 0.0.0.0:8001 --access-logfile - --chdir /home/iorl/SDN_Load_Balancer "lb_api:create_app()"
+
+[Install]
+WantedBy=multi-user.target
+
