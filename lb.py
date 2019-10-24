@@ -9,14 +9,11 @@ from rules import to_wifi, from_wifi
 
 # Create the logger
 logger = logging.getLogger(__name__)
-stream_handler = logging.StreamHandler()
 file_handler = logging.handlers.RotatingFileHandler(
-    "lb_app.log", maxBytes=10000, backupCount=5)
+    "/logs/lb_app.log", maxBytes=10000, backupCount=5)
 formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-stream_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(stream_handler)
+logger.setLevel(logging.INFO)
 logger.addHandler(file_handler)
 
 # Define global vars

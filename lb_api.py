@@ -15,7 +15,7 @@ import lb
 logger = logging.getLogger(__name__)
 stream_handler = logging.StreamHandler()
 file_handler = logging.handlers.RotatingFileHandler(
-    "lb_app.log", maxBytes=10000, backupCount=5)
+    "logs/lb_app.log", maxBytes=10000, backupCount=5)
 formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 stream_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
@@ -146,6 +146,25 @@ class Vlcusers(Resource):
             return {"Message": "The LB application is not running"}, 400
 
 
+class ServiceLogs(Resource):
+    """
+    Logs of the service. If no service is created, then returns the logs of the
+    application
+    """
+    def get(self):
+        """
+        Returns the logs of the service if running or else the logs of the LB
+        application
+        """
+        x = os.system("service lb status")
+        if not x:
+            os.system("journalctl -u lb.service -b -n 40> logs/lb.log")
+            log_file = "lb.log"
+        else:
+            log_file = "lb_app.log"
+        return send_from_directory("./logs/", log_file, as_attachment=True)
+
+
 class Logs(Resource):
     """
     Logs of the load balancer application
@@ -154,13 +173,8 @@ class Logs(Resource):
         """
         Returns the logs of the load balancer application
         """
-        x = os.system("service lb status")
-        if not x:
-            os.system("journalctl -u lb.service -b > lb.log")
-            log_file = "lb.log"
-        else:
-            log_file = "lb_app.log"
-        return send_from_directory("./", log_file, as_attachment=True)
+        log_file = "lb_app.log"
+        return send_from_directory("./logs/", log_file, as_attachment=True)
 
 
 def create_app():
@@ -181,6 +195,7 @@ def create_app():
     api.add_resource(Vlcusers, '/api/vlcusers')
     api.add_resource(Wifiusers, '/api/wifiusers')
     api.add_resource(Logs, '/api/logs')
+    api.add_resource(ServiceLogs, '/api/service_logs')
     # Register blueprint at URL
     app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
     return app

@@ -34,6 +34,10 @@
     {
       "name": "Logs",
       "description": "Log file of the Load Balancer application"
+    },
+    {
+      "name": "Service Logs",
+      "description": "Log file of the Web Server"
     }
   ],
   "schemes": [
@@ -321,6 +325,28 @@
           "Logs"
         ],
         "summary": "Returns the Load Balancer application logs",
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Bad Request",
+          },
+          "500": {
+            "description": "Server Error",
+          }
+        }
+      }
+    },
+    "/service_logs": {
+      "get": {
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Returns the Web Server logs",
         "produces": [
           "text/html"
         ],
