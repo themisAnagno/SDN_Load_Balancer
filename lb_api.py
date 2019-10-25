@@ -184,7 +184,7 @@ def create_app():
     logger.info("IoRL Load Balancer Application starts")
     # Start the lb application
     api_thread.start()
-    atexit.register(lambda: os.system("rm -f lb_app.log"))
+    atexit.register(lambda: os.system("rm -f *.log*"))
 
     app = Flask(__name__)
     api = Api(app)
