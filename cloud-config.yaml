@@ -2,7 +2,7 @@
 # vim: syntax=yaml
 #
 write_files:
-  - path: /init_param.json
+  - path: /home/iorl/SDN_Load_Balancer/init_config.json
     content: |
       {
         "upper_bw_limit": 40,
