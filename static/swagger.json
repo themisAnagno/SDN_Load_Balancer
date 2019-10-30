@@ -37,7 +37,7 @@
     },
     {
       "name": "Service Logs",
-      "description": "Log file of the Web Server"
+      "description": "Log file of the Service"
     }
   ],
   "schemes": [
@@ -344,9 +344,9 @@
     "/service_logs": {
       "get": {
         "tags": [
-          "Logs"
+          "Service Logs"
         ],
-        "summary": "Returns the Web Server logs",
+        "summary": "Returns the logs of the Service that implements the LB",
         "produces": [
           "text/html"
         ],
