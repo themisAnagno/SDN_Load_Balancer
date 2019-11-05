@@ -1,6 +1,7 @@
 # SDN Load Balancer on OpenStack SDN/NFV platform
 
 ## Prerequisites
+* python3.7
 * pip3
 
 ## Installation
