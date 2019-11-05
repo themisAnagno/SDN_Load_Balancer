@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Create the lb service, then activate it and start it
+
+echo "
+[Unit]
+Description=Gunicorn instance to serve Load Balancer Application
+After=network.target
+
+[Service]
+User=$USER
+WorkingDirectory=/home/$USER/SDN_Load_Balancer
+ExecStart=/usr/local/bin/gunicorn -b 0.0.0.0:8001 --access-logfile - --chdir /home/$USER/SDN_Load_Balancer \"lb_api:create_app()\"
+
+[Install]
+WantedBy=multi-user.target
+
+" > /etc/systemd/system/lb.service
+
+sleep 2
+systemctl enable lb
+sleep 2
+systemctl start lb
+sleep 2
+systemctl status lb
