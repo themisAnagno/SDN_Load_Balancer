@@ -1,7 +1,6 @@
 # SDN Load Balancer on OpenStack SDN/NFV platform
 
 ## Prerequisites
-* python3.7
 * pip3
 
 ## Installation
@@ -10,13 +9,20 @@ Clone the repository
 git clone https://github.com/themisAnagno/SDN_Load_Balancer.git
 cd SDN_Load_Balancer
 ```
+Create the Virtual Environment.
+```
+pip3 install virtualenv
+virtualenv venv --python=python3.7
+source venv/bin/activate
+```
+
 Install the requirements
 ```
 pip3 install -r requirements.txt
 ```
 Start the Load Balancer Application
 ```
-gunicorn -b 0.0.0.0:8001 --access-logfile - --chdir $(pwd) "lb_api:create_app()"
+venv/bin/gunicorn -b 0.0.0.0:8001 --access-logfile - --chdir $(pwd) "lb_api:create_app()"
 ```
 
 ## Introduction
@@ -165,8 +171,7 @@ curl http://<load_balancer_IP>:8001/api/logs
 This should return the logs of the Load Balancer service.
 
 ## Run the SDN Load Balancer as a service
-Copy the [service file](https://github.com/themisAnagno/SDN_Load_Balancer/blob/master/lb.service) to the /etc/systemd/system/ directory. Then run the following commands to enable and start the Load Balancer service.
+Run the make_service script. Note that it will need root privileges
 ```
-sudo systemctl enable lb
-sudo systemctl start lb
+./make_service
 ```

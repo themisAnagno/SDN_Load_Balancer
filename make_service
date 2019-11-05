@@ -10,16 +10,18 @@ After=network.target
 [Service]
 User=$USER
 WorkingDirectory=/home/$USER/SDN_Load_Balancer
-ExecStart=/usr/local/bin/gunicorn -b 0.0.0.0:8001 --access-logfile - --chdir /home/$USER/SDN_Load_Balancer \"lb_api:create_app()\"
+ExecStart=/home/$USER/SDN_Load_Balancer/venv/bin/gunicorn -b 0.0.0.0:8001 --access-logfile - --chdir /home/$USER/SDN_Load_Balancer \"lb_api:create_app()\"
 
 [Install]
 WantedBy=multi-user.target
 
-" > /etc/systemd/system/lb.service
+" > lb.service
 
 sleep 2
-systemctl enable lb
+sudo mv lb.service /etc/systemd/system/
 sleep 2
-systemctl start lb
+sudo systemctl enable lb
 sleep 2
-systemctl status lb
+sudo systemctl start lb
+sleep 2
+sudo systemctl status lb
